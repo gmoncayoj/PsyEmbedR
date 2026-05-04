@@ -1,0 +1,14 @@
+citHeader("To cite PsyEmbedR in publications use:")
+
+bibentry(
+  bibtype = "Manual",
+  title = "PsyEmbedR: Semantic auditing tools for psychometric item banks",
+  author = person("Jose", "GM"),
+  year = "2026",
+  note = "R package version 0.1.1",
+  textVersion = paste(
+    "Jose GM (2026).",
+    "PsyEmbedR: Semantic auditing tools for psychometric item banks.",
+    "R package version 0.1.1."
+  )
+)

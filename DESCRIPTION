@@ -1,0 +1,39 @@
+Package: PsyEmbedR
+Title: Semantic Auditing Tools for Psychometric Item Banks
+Version: 0.1.1
+Authors@R:
+    person(given = "Jose",
+           family = "GM",
+           email = "josegm@example.com",
+           role = c("aut", "cre"))
+Description: Provides a local workflow for preliminary semantic auditing of
+    psychometric items without relying on external AI APIs. The package
+    integrates R with Python through 'reticulate' and uses
+    'sentence-transformers' to generate embeddings, quantify semantic
+    similarity, align items to theoretical definitions, flag redundancy,
+    visualize semantic maps, and summarize semantic coverage across
+    dimensions.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Depends:
+    R (>= 4.2.0)
+Imports:
+    cli,
+    dplyr,
+    glue,
+    purrr,
+    reticulate,
+    rlang,
+    stringr,
+    tibble,
+    tidyr
+Suggests:
+    ggrepel,
+    ggplot2,
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+VignetteBuilder: knitr
+Config/testthat/edition: 3

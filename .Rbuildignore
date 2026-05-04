@@ -1,0 +1,10 @@
+^\.Rproj\.user$
+^\.Rhistory$
+^\.RData$
+^\.DS_Store$
+^\.gitignore$
+^.*\.Rproj$
+^README\.Rmd$
+^cran-comments\.md$
+^PsyEmbedR\.Rcheck$
+^PsyEmbedR_.*\.tar\.gz$

@@ -1,0 +1,220 @@
+---
+title: "PsyEmbedR Workflow"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{PsyEmbedR Workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+`PsyEmbedR` supports a local semantic auditing workflow for psychometric
+item banks. The package combines R and Python through `reticulate` and
+uses `sentence-transformers` to produce sentence embeddings without
+using external AI APIs.
+
+## 1. Load the package
+
+```{r}
+library(PsyEmbedR)
+```
+
+## 2. Prepare a Python environment
+
+The helper below creates a virtual environment if needed, installs the
+required Python libraries, activates the environment, and verifies that
+`sentence_transformers` is available.
+
+```{r, eval = FALSE}
+ensure_python_deps()
+```
+
+The virtual environment contains:
+
+- `sentence-transformers`
+- `torch`
+- `numpy`
+- `scikit-learn`
+
+If you are configuring the package on a new machine and the default
+virtualenv root does not exist yet, you can point `reticulate` to a
+writable directory before loading the package:
+
+```{r, eval = FALSE}
+Sys.setenv(RETICULATE_VIRTUALENV_ROOT = "C:/Users/your-user/Documents/.virtualenvs")
+library(PsyEmbedR)
+ensure_python_deps()
+```
+
+## 3. Define items and theoretical definitions
+
+```{r}
+items <- c(
+  "I adapt my plans when the context changes unexpectedly.",
+  "I detect relevant environmental changes very quickly.",
+  "I recover my concentration after a difficult event.",
+  "I modify my behavior when demands increase."
+)
+
+definitions <- c(
+  adaptive = "Flexible behavior change in response to situational demands.",
+  ecological = "Detection of relevant cues in the surrounding environment.",
+  resilient = "Recovery of effective functioning after challenge or stress."
+)
+```
+
+## 4. Detect language and resolve the model
+
+`PsyEmbedR` includes a lightweight local heuristic for short
+psychometric texts:
+
+```{r}
+detect_text_language(c(items, unname(definitions)))
+```
+
+The main semantic functions default to `model_name = "auto"`. In that
+mode, English-only text is routed to
+`sentence-transformers/all-mpnet-base-v2`, while Spanish, mixed, or
+uncertain text is routed to
+`sentence-transformers/paraphrase-multilingual-mpnet-base-v2`.
+
+## 5. Generate embeddings
+
+```{r, eval = FALSE}
+embeddings <- embed_items(items)
+dim(embeddings)
+```
+
+To use a different model, pass `model_name` explicitly. For fully
+offline work, provide a local model path or a model that has already
+been cached on the machine.
+
+## 6. Compute item-to-item semantic similarity
+
+```{r, eval = FALSE}
+item_similarity <- cosine_matrix(embeddings)
+item_similarity
+```
+
+This matrix is useful for identifying clusters of very similar items
+before empirical fieldwork.
+
+## 7. Align items to theoretical definitions
+
+```{r, eval = FALSE}
+alignment <- align_to_definition(
+  items = items,
+  definitions = definitions
+)
+
+alignment
+```
+
+The returned tibble is in long format and includes:
+
+- the item identifier,
+- the item text,
+- each candidate definition,
+- the cosine similarity for that pairing,
+- the best semantic match for each item, and
+- the best similarity score for each item.
+
+## 8. Infer the most likely dimension for each item
+
+```{r, eval = FALSE}
+infer_dimensions(
+  items = items,
+  definitions = definitions
+)
+```
+
+This is a convenience wrapper over `align_to_definition()` that returns
+the best semantic classification for each item.
+
+By default, if the best cosine similarity is below `0.20`, the item is
+flagged as lacking a clear semantic alignment and receives the label
+`"no clear alignment"`. You can adjust that threshold with
+`min_similarity`.
+
+The output distinguishes between:
+
+- `nearest_definition`: the closest theoretical definition before
+  applying the threshold.
+- `predicted_dimension`: the final threshold-aware preliminary
+  assignment shown in the report.
+
+## 9. Visualize the semantic map in two dimensions
+
+```{r, eval = FALSE}
+plot_semantic_map(items)
+```
+
+The default projection uses classical multidimensional scaling over
+cosine distances, so the layout is linked directly to the item-to-item
+similarity structure. If needed, you can also request `method = "pca"`.
+Label placement defaults to `label_method = "auto"`, which uses
+repelled labels when `ggrepel` is available and otherwise falls back to
+plain text labels.
+
+Coloring is independent of the projection method. For example:
+
+```{r, eval = FALSE}
+plot_semantic_map(
+  items = items,
+  definitions = definitions,
+  color_by = "inferred"
+)
+
+plot_semantic_map(
+  items = items,
+  expected_dimension = c("adaptive", "ecological", "resilient", "adaptive"),
+  method = "pca",
+  color_by = "expected"
+)
+```
+
+## 10. Flag potential redundancy
+
+```{r, eval = FALSE}
+flag_redundancy(items, threshold = 0.85)
+```
+
+Pairs at or above the threshold should be reviewed for semantic overlap
+and possible item pruning.
+
+## 11. Summarize semantic coverage by dimension
+
+```{r, eval = FALSE}
+coverage <- semantic_coverage_report(
+  items = items,
+  definitions = definitions,
+  expected_dimension = c("adaptive", "ecological", "resilient", "adaptive")
+)
+
+coverage$summary_by_dimension
+coverage$classification_summary
+coverage$misaligned_items
+```
+
+This report helps determine whether a bank appears semantically balanced
+across dimensions and whether item assignments are consistent with their
+intended theoretical labels.
+
+## 12. Example scripts in Spanish and English
+
+The package includes two complete step-by-step scripts:
+
+- `inst/examples/workflow_spanish.R`
+- `inst/examples/workflow_english.R`
+
+## 13. Recommended interpretation
+
+`PsyEmbedR` is intended for preliminary semantic review. It should be
+used to complement, not replace, substantive theoretical review and
+empirical psychometric validation.
