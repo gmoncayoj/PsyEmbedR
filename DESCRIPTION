@@ -2,10 +2,10 @@ Package: PsyEmbedR
 Title: Semantic Auditing Tools for Psychometric Item Banks
 Version: 0.1.1
 Authors@R:
-    person(given = "Jose",
-           family = "GM",
-           email = "josegm@example.com",
-           role = c("aut", "cre"))
+    person("Jose", "Gamarra-Moncayo",
+           email = "gamarramoncayoj@gmail.com",
+           role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-0781-3616"))
 Description: Provides a local workflow for preliminary semantic auditing of
     psychometric items without relying on external AI APIs. The package
     integrates R with Python through 'reticulate' and uses
