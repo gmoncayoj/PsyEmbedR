@@ -119,63 +119,128 @@ the local cache or stored on disk.
 ```r
 library(PsyEmbedR)
 
-items <- c(
-  "I adapt my plans when circumstances change.",
-  "I quickly detect relevant changes in my surroundings.",
-  "I recover my focus after setbacks.",
-  "I adjust my actions when the task becomes more demanding."
+items <- c("I have a good sense of why I have certain feelings most of the time",
+           "I have good understanding of my own emotions",
+           "I really understand what I feel",
+           "I always know whether or not I am happy",
+           "I always know my friends’ emotions from their behaviour",
+           "I am a good observer of others’ emotions",
+           "I am sensitive to the feelings and emotions of others",
+           "I have good understanding of the emotions of people around me",
+           "I always set goals for myself and then try my best to achieve them",
+           "I always tell myself I am a competent person",
+           "I am a self-motivating person",
+           "I would always encourage myself to try my best",
+           "I am able to control my temper so that I can handle difficulties rationally",
+           "I am quite capable of controlling my own emotions",
+           "I can always calm down quickly when I am very angry",
+           "I have good control of my own emotions"
 )
 
 definitions <- c(
-  adaptive = "Flexible behavior change in response to situational demands.",
-  ecological = "Detection of relevant cues in the surrounding environment.",
-  resilient = "Recovery of effective functioning after challenge or stress."
+  SEA = "Individual’s ability to understand their deep emotions and be able to express these emotions naturally",
+  #Self Emotional Appraisal
+  OEA = "People's ability to perceive and understand the emotions of those people around them",
+  #Others' Emotional Appraisal
+  UOE = "Ability of individuals to make use of their emotions by directing them towards constructive activities and personal performance",
+  #Use of Emotion
+  ROE = "Ability of people to regulate their emotions, which will enable a more rapid recovery from psychological distress"
+  #Regulation of Emotion
 )
 
-ensure_python_deps()
+# Sort the items according to the dimension they belong to, in the same order as specified in the “items” object
+expected_dimension <- c("SEA", "SEA", "SEA", "SEA",
+                        "OEA", "OEA", "OEA", "OEA",
+                        "UOE", "UOE", "UOE", "UOE",
+                        "ROE", "ROE", "ROE", "ROE")
 
-detect_text_language(c(items, unname(definitions)))
 
+# 1. Prepare Python dependencies before any semantic analysis.
+deps <- ensure_python_deps()
+print(deps)
+
+# 2. Detect the dominant language from items and definitions.
+# This helps confirm the automatic model choice.
+language <- detect_text_language(c(items, unname(definitions)))
+print(language)
+
+# 3. Generate item embeddings.
+# Each row represents one item in the semantic vector space.
 embeddings <- embed_items(items)
-similarity <- cosine_matrix(embeddings)
+print(dim(embeddings))
 
+# 4. Compute item-to-item cosine similarity.
+# Higher values indicate stronger semantic proximity.
+item_similarity <- cosine_matrix(embeddings)
+print(round(item_similarity, 3))
+
+# 5. Align items to theoretical definitions.
+# This returns the full item-definition similarity table.
 alignment <- align_to_definition(
   items = items,
   definitions = definitions
 )
+print(alignment, n = Inf, width = Inf)
 
+# 6. Infer the most likely dimension for each item.
+# Items below the minimum similarity threshold are labeled
+# "no clear alignment" rather than being forced into a dimension.
 predicted_dimensions <- infer_dimensions(
   items = items,
   definitions = definitions
 )
+print(predicted_dimensions, n = Inf, width = Inf)
 
-redundant_pairs <- flag_redundancy(
-  items = items,
-  threshold = 0.85
-)
-
+# 7. Plot the two-dimensional semantic map.
+# The default MDS projection is based on cosine distance, so it reflects
+# the item-to-item similarity structure directly.
 semantic_map <- plot_semantic_map(items)
+print(semantic_map, n = Inf, width = Inf)
 
-# Color by inferred dimension. This is independent of MDS vs PCA.
+# 7a. Color the map by inferred semantic dimension.
+# Projection method and color strategy are independent choices.
 semantic_map_inferred <- plot_semantic_map(
   items = items,
   definitions = definitions,
   color_by = "inferred"
 )
+print(semantic_map_inferred)
 
-# Color by expected dimension while keeping a PCA projection.
+# 7b. Color the map by expected dimension while using PCA coordinates.
 semantic_map_expected <- plot_semantic_map(
   items = items,
-  expected_dimension = c("adaptive", "ecological", "resilient", "adaptive"),
+  expected_dimension = expected_dimension,
   method = "pca",
   color_by = "expected"
 )
+print(semantic_map_expected)
 
+# If you prefer, you can also force label behavior explicitly:
+# semantic_map <- plot_semantic_map(items, label_method = "repel")
+# semantic_map <- plot_semantic_map(items, label_method = "text")
+# semantic_map <- plot_semantic_map(items, label_method = "none")
+
+# 8. Flag potentially redundant item pairs.
+# Review these pairs for possible semantic overlap.
+redundant_pairs <- flag_redundancy(
+  items = items,
+  threshold = 0.80
+)
+print(redundant_pairs)
+
+# 9. Summarize semantic coverage.
+# This combines inferred semantic classification with the expected
+# theoretical dimension assigned by the analyst.
 coverage <- semantic_coverage_report(
   items = items,
   definitions = definitions,
-  expected_dimension = c("adaptive", "ecological", "resilient", "adaptive")
+  expected_dimension = expected_dimension
 )
+
+print(coverage$best_alignment)
+print(coverage$summary_by_dimension)
+print(coverage$classification_summary)
+print(coverage$misaligned_items)
 ```
 
 `infer_dimensions()` uses a configurable minimum similarity threshold to
