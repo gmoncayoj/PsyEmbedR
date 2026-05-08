@@ -136,6 +136,9 @@ items <- c("I have a good sense of why I have certain feelings most of the time"
            "I can always calm down quickly when I am very angry",
            "I have good control of my own emotions"
 )
+# Note: Taken from the study by Extremera et al. (2019).
+# Reference: Extremera, N., Rey, L., & Sánchez-Álvarez, N. (2019). Validation of the Spanish version of the Wong Law Emotional Intelligence Scale (WLEIS-S). 
+# Psicothema, 31(1), 94-100. https://doi.org/10.7334/psicothema2018.147
 
 definitions <- c(
   SEA = "Individual’s ability to understand their deep emotions and be able to express these emotions naturally",
@@ -147,6 +150,9 @@ definitions <- c(
   ROE = "Ability of people to regulate their emotions, which will enable a more rapid recovery from psychological distress"
   #Regulation of Emotion
 )
+# Note: Taken from the study by Wong & Law (2002).
+# Reference: Wong, Ch-S., & Law, K. (2002). The effects of leader and follower emotional intelligence on performance and attitude: An exploratory study.
+# The Leadership Quarterly, 13(3), 243-274. https://doi.org/10.1016/S1048-9843(02)00099-1
 
 # Sort the items according to the dimension they belong to, in the same order as specified in the “items” object
 expected_dimension <- c("SEA", "SEA", "SEA", "SEA",
